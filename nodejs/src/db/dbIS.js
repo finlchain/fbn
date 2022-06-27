@@ -24,6 +24,8 @@ module.exports.createTableNames = {
         "repl_info",
         //
         "reg_token",
+        //
+        "system_info",
     ]
 }
 
@@ -126,6 +128,12 @@ const createTableFields = {
         + "KEY `symbol` (`symbol`(4)) USING BTREE, "
         + "KEY `name` (`name`(10)) USING BTREE, "
         + "PRIMARY KEY (`idx`, `action`, `subnet_id`) USING BTREE",
+
+        // system_info
+        "`subnet_id` smallint(5) unsigned DEFAULT 0 NOT NULL, "
+        + "`idx` smallint(5) unsigned NOT NULL AUTO_INCREMENT, "
+        + "`net_info` json DEFAULT NULL, "
+        + "PRIMARY KEY (`idx`, `subnet_id`) USING BTREE",
     ]
 }
 
@@ -155,6 +163,9 @@ module.exports.createTables = {
         `CREATE TABLE IF NOT EXISTS ${dbUtil.tableAppendix.tableName} (`
         + createTableFields.isQuerys[7]
         + `) ${dbUtil.tableAppendix.appendix}`,
+        `CREATE TABLE IF NOT EXISTS ${dbUtil.tableAppendix.tableName} (`
+        + createTableFields.isQuerys[8]
+        + `) ${dbUtil.tableAppendix.appendix}`,
     ]
 }
 
@@ -164,6 +175,17 @@ module.exports.querys = {
         createIS : "CREATE DATABASE IF NOT EXISTS `is`",
         dropIS : "DROP DATABASE IF EXISTS `is`",
         useIS : "USE `is`",
+
+        truncateIsHubInfo : dbUtil.truncate("`is`." + `${this.createTableNames.isQuerys[0]}`),
+        truncateIsClusterInfo : dbUtil.truncate("`is`." + `${this.createTableNames.isQuerys[1]}`),
+        truncateIsKafkaInfo : dbUtil.truncate("`is`." + `${this.createTableNames.isQuerys[2]}`),
+        truncateIsNodeHwInfo : dbUtil.truncate("`is`." + `${this.createTableNames.isQuerys[3]}`),
+        truncateIsNodeConsInfo : dbUtil.truncate("`is`." + `${this.createTableNames.isQuerys[4]}`),
+        truncateIsRevision : dbUtil.truncate("`is`." + `${this.createTableNames.isQuerys[5]}`),
+        truncateIsReplInfo : dbUtil.truncate("`is`." + `${this.createTableNames.isQuerys[6]}`),
+        truncateIsRegToken : dbUtil.truncate("`is`." + `${this.createTableNames.isQuerys[7]}`),
+        truncateIsSystemInfo : dbUtil.truncate("`is`." + `${this.createTableNames.isQuerys[8]}`),
+        
         repl_info : {
             selectReplInfo: "SELECT * FROM is.repl_info_shard ORDER BY blk_num DESC",
             selectMaxReplInfoByBN: "SELECT MAX(blk_num) as max_blk_num FROM is.repl_info_shard WHERE blk_num <= ? ORDER BY blk_num DESC",
@@ -177,7 +199,10 @@ module.exports.querys = {
             selectRegTokenByAction : "SELECT * FROM is.reg_token_shard WHERE action = ?",
             selectRegTokenByName : "SELECT * FROM is.reg_token_shard WHERE name = ?",
             selectRegTokenBySymbol : "SELECT * FROM is.reg_token_shard WHERE symbol = ?",
-        }
+        }, 
+        system_info : {
+            // 
+        },
     }
 };
 
@@ -192,6 +217,40 @@ const dropIsDB = async () => {
     await dbUtil.query(this.querys.is.dropIS);
 }
 
+module.exports.truncateIsDB = async () => {
+    const conn = await dbUtil.getConn();
+
+    let sql;
+
+    sql = this.querys.is.truncateIsClusterInfo;
+    await conn.query(sql);
+
+    sql = this.querys.is.truncateIsHubInfo;
+    await conn.query(sql);
+
+    sql = this.querys.is.truncateIsKafkaInfo;
+    await conn.query(sql);
+
+    sql = this.querys.is.truncateIsNodeHwInfo;
+    await conn.query(sql);
+
+    sql = this.querys.is.truncateIsNodeConsInfo;
+    await conn.query(sql);
+
+    sql = this.querys.is.truncateIsRevision;
+    await conn.query(sql);
+
+    sql = this.querys.is.truncateIsReplInfo;
+    await conn.query(sql);
+
+    sql = this.querys.is.truncateIsRegToken;
+    await conn.query(sql);
+
+    sql = this.querys.is.truncateIsSystemInfo;
+    await conn.query(sql);
+
+    await dbUtil.releaseConn(conn);
+}
 
 module.exports.initDatabaseIS = async () => {
     // if(config.DB_TEST_MODE)

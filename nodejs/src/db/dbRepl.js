@@ -74,6 +74,90 @@ module.exports.stopReplSlaves = async () => {
     await dbUtil.query(queryV);
 }
 
+module.exports.restartReplSlaves = async () => {
+    await this.stopReplSlaves();
+
+    const conn = await dbUtil.getConn();
+
+    [query_result] = await conn.query(`SHOW ALL SLAVES STATUS`);
+    // logger.debug("dropReplSlaves length : " + query_result.length);
+
+    //
+    await this.stopReplSlaves();
+    await this.resetReplSlaves();
+    
+    //
+    for(var i = 0; i < query_result.length; i++)
+    {
+        let connName = query_result[i]['Connection_name'];
+        let masterUser = query_result[i]['Master_User'];
+        await util.asyncForEach(config.CFG_PATH.MARIA.REPL_USERS, async(element, index) => {
+            if (element === masterUser)
+            {
+                let masterHost = query_result[i]['Master_Host'];
+                let masterPwd = config.CFG_PATH.MARIA.REPL_USERS_PW[index];
+                let masterPort = query_result[i]['Master_Port'];
+                let masterLogFile = query_result[i]['Master_Log_File'];
+                let masterLogPos = query_result[i]['Exec_Master_Log_Pos'];
+
+                logger.debug("connName : " + connName);
+                logger.debug("masterHost : " + masterHost); // IP
+                logger.debug("masterUser : " + masterUser);
+                logger.debug("masterPwd : " + masterPwd);
+                logger.debug("masterPort : " + masterPort);
+                logger.debug("masterLogFile : " + masterLogFile);
+                logger.debug("masterLogPos : " + masterLogPos);
+        
+                await this.setReplSlaves(connName, masterHost, masterUser, masterPwd, masterPort, masterLogFile, masterLogPos);
+            }
+        });
+
+    }
+
+    await this.startReplSlaves();
+    
+    await dbUtil.releaseConn(conn);
+}
+
+module.exports.getReplSlaves = async () => {
+    await this.stopReplSlaves();
+
+    const conn = await dbUtil.getConn();
+
+    [query_result] = await conn.query(`SHOW ALL SLAVES STATUS`);
+    // logger.debug("dropReplSlaves length : " + query_result.length);
+    
+    //
+    for(var i = 0; i < query_result.length; i++)
+    {
+        let connName = query_result[i]['Connection_name'];
+        let masterUser = query_result[i]['Master_User'];
+        await util.asyncForEach(config.CFG_PATH.MARIA.REPL_USERS, async(element, index) => {
+            if (element === masterUser)
+            {
+                let masterHost = query_result[i]['Master_Host'];
+                let masterPwd = config.CFG_PATH.MARIA.REPL_USERS_PW[index];
+                let masterPort = query_result[i]['Master_Port'];
+                let masterLogFile = query_result[i]['Master_Log_File'];
+                let masterLogPos = query_result[i]['Exec_Master_Log_Pos'];
+
+                logger.debug("connName : " + connName);
+                logger.debug("masterHost : " + masterHost); // IP
+                logger.debug("masterUser : " + masterUser);
+                logger.debug("masterPwd : " + masterPwd);
+                logger.debug("masterPort : " + masterPort);
+                logger.debug("masterLogFile : " + masterLogFile);
+                logger.debug("masterLogPos : " + masterLogPos);
+
+                this.getReplSlavesQueries(connName, masterHost, masterUser, masterPwd, masterPort, masterLogFile, masterLogPos);
+            }
+        });
+
+    }
+
+    await dbUtil.releaseConn(conn);
+}
+
 module.exports.resetReplSlaves = async () => {
     await this.stopReplSlaves();
 
@@ -126,6 +210,34 @@ module.exports.setReplSlaveInfo = async (subNetId, ip, logFile, logPos) => {
 
     await dbUtil.releaseConn(conn);
 }
+
+module.exports.getReplSlavesQueries = (connName, ip, user, pwd, port, logFile, logPos) => {
+    let queries = `CHANGE MASTER '${connName}' TO `
+            + `MASTER_HOST='${ip}', `
+            + `MASTER_USER='${user}',`
+            + `MASTER_PASSWORD='${pwd}',`
+            + `MASTER_PORT=${port}, ` 
+            + `MASTER_LOG_FILE='${logFile}', ` 
+            + `MASTER_LOG_POS=${logPos}`;
+    
+    logger.debug("setReplSlaves query : " + queries);
+
+    return queries;
+}
+
+module.exports.setReplSlaves = async (connName, ip, user, pwd, port, logFile, logPos) => {
+    const conn = await dbUtil.getConn();
+
+    // if (util.isMyIP(ip) === false)
+    // {
+        let queries = this.getReplSlavesQueries(connName, ip, user, pwd, port, logFile, logPos);
+        
+        await conn.query(queries);
+    // }
+
+    await dbUtil.releaseConn(conn);
+}
+
 
 module.exports.dropReplUsers = async () => {
     let user;

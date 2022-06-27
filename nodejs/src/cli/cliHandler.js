@@ -6,6 +6,7 @@ const config = require('./../../config/config.js');
 const define = require('./../../config/define.js');
 const util = require('./../utils/commonUtil.js');
 const dbUtil = require('./../db/dbUtil.js');
+const dbIS = require('./../db/dbIS.js');
 const dbNN = require('./../db/dbNN.js');
 const dbFB = require('./../db/dbFB.js');
 const dbFBHandler = require('./../db/dbFBHandler.js');
@@ -14,6 +15,7 @@ const dbRepl = require("./../db/dbRepl.js");
 const repl = require("./../reg/replication.js");
 const webApi = require("./../net/webApi.js");
 const logger = require('./../utils/winlog.js');
+const { initDatabaseIS } = require('../db/dbIS.js');
 
 //
 let replDataArrInfo;
@@ -22,7 +24,7 @@ let replDataArrInfo;
 module.exports.handler = async (cmd) => {
     let retVal = true;
 
-    logger.info('ISAg CLI Received Data : ' + cmd);
+    logger.info('FBN CLI Received Data : ' + cmd);
 
     let cmdSplit = cmd.split(' ');
 
@@ -31,6 +33,8 @@ module.exports.handler = async (cmd) => {
     {
         logger.info("DB Truncated");
 
+        //
+        await dbIS.truncateIsDB();
         //
         await dbNN.truncateScDB();
         await dbNN.truncateBlockDB();
@@ -80,7 +84,7 @@ module.exports.handler = async (cmd) => {
         let postData = `${apiKey1}=${apiVal1}`;
 
         //
-        let apiRes = await webApi.APICallProc(apiPath, config.ISAG_CONFIG, webApi.WEBAPI_DEFINE.METHOD.POST, postData);
+        let apiRes = await webApi.APICallProc(apiPath, config.FBN_CONFIG, webApi.WEBAPI_DEFINE.METHOD.POST, postData);
 
         logger.debug("apiRes : " + JSON.stringify(apiRes));
     }
@@ -97,14 +101,14 @@ module.exports.handler = async (cmd) => {
         let postData = `${apiKey1}=${apiVal1}`;
 
         //
-        let apiRes = await webApi.APICallProc(apiPath, config.ISAG_CONFIG, webApi.WEBAPI_DEFINE.METHOD.POST, postData);
+        let apiRes = await webApi.APICallProc(apiPath, config.FBN_CONFIG, webApi.WEBAPI_DEFINE.METHOD.POST, postData);
 
         logger.debug("apiRes : " + JSON.stringify(apiRes));
     }
     else if(cmd.slice(0,8) === "fb rinfo")
     {
         let apiRoutePath = '/fb/repl/info';
-        let apiRes = await webApi.APICallProc(apiRoutePath, config.ISAG_CONFIG, webApi.WEBAPI_DEFINE.METHOD.GET);
+        let apiRes = await webApi.APICallProc(apiRoutePath, config.FBN_CONFIG, webApi.WEBAPI_DEFINE.METHOD.GET);
 
         logger.debug("apiRes : " + JSON.stringify(apiRes));
 
@@ -214,6 +218,10 @@ module.exports.handler = async (cmd) => {
     {
         logger.info("Replication Slave Start");
         await dbRepl.startReplSlaves();
+    }
+    else if (cmd.slice(0, 9) === "replS get")
+    {
+        await dbRepl.getReplSlaves();
     }
     else if  (cmd.slice(0,3) === "ips")
     {

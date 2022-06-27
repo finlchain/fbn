@@ -62,6 +62,7 @@ const createTableFields = {
         + "`to_account` bigint(20) unsigned DEFAULT 0 NOT NULL,"
         + "`action` int(11) unsigned NOT NULL DEFAULT 0,"
         + "`c_action` int(11) unsigned NOT NULL DEFAULT 0,"
+        + "`dst_account` bigint(20) unsigned DEFAULT 0 NOT NULL,"
         + "`amount` text NOT NULL,"
         + "`signed_pubkey` text NOT NULL COMMENT 'Signed Public Key', "
         + "`err_code` smallint(5) NOT NULL DEFAULT 0,"
@@ -70,7 +71,10 @@ const createTableFields = {
         + "KEY `c_action` (`action`, `c_action`) USING BTREE, "
         + "KEY `to_account` (`to_account`) USING BTREE, "
         + "KEY `from_account` (`from_account`) USING BTREE, "
+        + "KEY `dst_account` (`dst_account`) USING BTREE, "
         + "KEY `db_key` (`db_key`, `confirmed`) USING BTREE, "
+        + "KEY `create_tm` (`create_tm`) USING BTREE, "
+        + "KEY `subnet_id` (`subnet_id`) USING BTREE, "
         + "UNIQUE KEY `uk_db_key` (`db_key`, `subnet_id`), "
         + "PRIMARY KEY (`db_key`, `confirmed`, `create_tm`, `to_account`, `from_account`, `subnet_id`) USING BTREE",
 
@@ -90,6 +94,7 @@ const createTableFields = {
         + "`contract` json DEFAULT NULL,"
         + "KEY `executed1` (`executed`, `action`, `from_account`, `to_account`) USING BTREE, "
         + "KEY `executed2` (`executed`, `create_tm`) USING BTREE, "
+        + "KEY `create_tm` (`create_tm`) USING BTREE, "
         + "UNIQUE KEY `uk_idx` (`idx`, `subnet_id`), "
         + "PRIMARY KEY (`idx`, `executed`, `create_tm`, `action`, `from_account`, `to_account`, `subnet_id`) USING BTREE",
     ],
@@ -116,13 +121,15 @@ const createTableFields = {
         + "`pubkey` text NOT NULL COMMENT 'Signed Public Key',"
         + "`bct`  bigint(20) unsigned, "
         + "KEY `blk_hash` (`blk_hash`(64)) USING BTREE, "
+        + "KEY `bgt` (`bgt`) USING BTREE, "
         + "UNIQUE KEY `uk_blk_num` (`blk_num`, `subnet_id`), "
         + "PRIMARY KEY (`blk_num`, `tx_cnt`, `blk_hash`(64), `subnet_id`) USING BTREE",
     ],
     accountQuerys : [
         // account_tokens
           "`subnet_id` smallint(5) unsigned DEFAULT 0 NOT NULL, "
-        + "`idx` bigint(20) unsigned NOT NULL AUTO_INCREMENT,"
+        + "`idx` bigint(20) unsigned NOT NULL AUTO_INCREMENT, "
+        + "`revision` bigint(20) unsigned DEFAULT 0 NOT NULL COMMENT 'Revision', "
         + "`create_tm` bigint(20) unsigned DEFAULT 0 NOT NULL COMMENT 'Contract Create Time', "
         + "`blk_num` bigint(20) unsigned DEFAULT 0 NOT NULL COMMENT 'Block Number', "
         + "`db_key` bigint(20) unsigned DEFAULT 0 NOT NULL COMMENT 'DB Key', "
@@ -142,6 +149,7 @@ const createTableFields = {
         + "`lock_transfer` tinyint(3) DEFAULT 0 NOT NULL,"
         + "`black_list` json DEFAULT NULL, "
         + "`functions` longtext DEFAULT NULL, "
+        + "KEY `revision` (`revision`) USING BTREE, "
         + "KEY `pubkey` (`owner_pk`(64), `super_pk`(64)) USING BTREE, "
         + "KEY `owner_pk` (`owner_pk`(64)) USING BTREE, "
         + "KEY `super_pk` (`super_pk`(64)) USING BTREE, "
@@ -153,7 +161,8 @@ const createTableFields = {
         
         // account_users
           "`subnet_id` smallint(5) unsigned DEFAULT 0 NOT NULL, "
-        + "`idx` bigint(20) unsigned NOT NULL AUTO_INCREMENT,"
+        + "`idx` bigint(20) unsigned NOT NULL AUTO_INCREMENT, "
+        + "`revision` bigint(20) unsigned DEFAULT 0 NOT NULL COMMENT 'Revision', "
         + "`create_tm` bigint(20) unsigned DEFAULT 0 NOT NULL COMMENT 'Contract Create Time', "
         + "`blk_num` bigint(20) unsigned DEFAULT 0 NOT NULL COMMENT 'Block Number', "
         + "`db_key` bigint(20) unsigned DEFAULT 0 NOT NULL COMMENT 'DB Key', "
@@ -163,6 +172,7 @@ const createTableFields = {
         //+ "`signed_pubkey` text NOT NULL COMMENT 'Signed Public Key', "
         + "`account_num` bigint(20) unsigned DEFAULT 0 NOT NULL COMMENT 'Account Number', "
         + "`account_id` text BINARY DEFAULT NULL,"
+        + "KEY `revision` (`revision`) USING BTREE, "
         + "KEY `pubkey` (`owner_pk`(64), `super_pk`(64)) USING BTREE, "
         + "KEY `owner_pk` (`owner_pk`(64)) USING BTREE, "
         + "KEY `super_pk` (`super_pk`(64)) USING BTREE, "
@@ -171,7 +181,7 @@ const createTableFields = {
         + "PRIMARY KEY (`db_key`, `account_num`, `blk_num`, `owner_pk`(64), `super_pk`(64), `subnet_id`) USING BTREE",
 
         // account_ledgers
-          "`subnet_id` smallint(5) unsigned DEFAULT 0 NOT NULL, "
+        "`subnet_id` smallint(5) unsigned DEFAULT 0 NOT NULL, "
         + "`idx` bigint(20) unsigned NOT NULL AUTO_INCREMENT,"
         + "`create_tm` bigint(20) unsigned DEFAULT 0 NOT NULL COMMENT 'Contract Create Time', "
         + "`blk_num` bigint(20) unsigned DEFAULT 0 NOT NULL COMMENT 'Block Number', "
@@ -187,6 +197,7 @@ const createTableFields = {
         + "KEY `balance1` (`my_account_num`, `action`, `create_tm`) USING BTREE, "
         + "KEY `balance2` (`action`, `my_account_num`, `create_tm`) USING BTREE, "
         + "KEY `subnet_id` (`subnet_id`) USING BTREE, "
+        + "KEY `action_account` (`action`, `my_account_num`) USING BTREE, "
         + "UNIQUE KEY `uk_idx` (`idx`, `subnet_id`), "
         + "PRIMARY KEY (`idx`, `db_key`, `my_account_num`, `action`, `blk_num`, `create_tm`, `subnet_id`) USING BTREE",
 

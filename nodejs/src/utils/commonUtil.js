@@ -169,21 +169,21 @@ module.exports.getMyIPs = () => {
 
 module.exports.getMyCtrlIP = () => {
     let localIPs = this.getMyIPs();
-    localIP = localIPs[config.IP_ASSIGN.CTRL];
+    let localIP = localIPs[config.IP_ASSIGN.CTRL];
 
     return (localIP);
 }
 
 module.exports.getMyDataIP = () => {
     let localIPs = this.getMyIPs();
-    localIP = localIPs[config.IP_ASSIGN.DATA];
+    let localIP = localIPs[config.IP_ASSIGN.DATA];
 
     return (localIP);
 }
 
 module.exports.getMyReplIP = () => {
     let localIPs = this.getMyIPs();
-    localIP = localIPs[config.IP_ASSIGN.REPL];
+    let localIP = localIPs[config.IP_ASSIGN.REPL];
 
     return (localIP);
 }
