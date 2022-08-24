@@ -97,7 +97,21 @@ module.exports.CRYPTO_ARG = {
 }
 
 module.exports.CMD = {
-    encoding: 'utf8'
+    ENCODING:       'utf8', 
+    DB_DT:          'dt', 
+    DB_INIT:        'init db', 
+    DB_ACT_QUERY:   'act query', 
+    GET_MY_IPS:     'ips', 
+    //
+    REPL_INFO:      'fb rinfo',
+    REPL_SET:       'fb rset', 
+    REPL_GET:       'fb rget', 
+    REPL_RESET:     'fb rrst', 
+    REPL_STOP:      'fb rstop', 
+    REPL_START:     'fb rstt', 
+    //
+    REPL_SAVE_MINE: 'fb rsave', 
+    REPL_GET_SLAVE: 'replS get', 
 }
 
 module.exports.START_MSG = "=================================================="
@@ -147,10 +161,11 @@ module.exports.DB_DEFINE = {
         CREATE_USER_INDEX : 1,
         GRANT_ALL_INDEX : 2
     },
+
+    REPL_PORT : 13306, 
 }
 
 module.exports.P2P_DEFINE = {
-    P2P_SUBNET_ID_IS : '0001',
     P2P_ROOT_SPLIT_INDEX : {
         START : 10,
         END : 14

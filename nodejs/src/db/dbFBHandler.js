@@ -35,7 +35,7 @@ module.exports.saveReplInfo = async (replData) => {
 
     logger.info("clusterP2pAddr : " + clusterP2pAddr + ", subNetId : " + subNetId);
     logger.info("ip : " + ip + ", logFile : " + logFile + ", logPos : " + logPos + ", replBlkNum : " + replBlkNum);
-    await dbRepl.setReplSlaveInfo(subNetId, ip, logFile, logPos);
+    await dbRepl.setReplSlaveInfo(subNetId, ip, logFile, logPos, define.DB_DEFINE.REPL_PORT);
 
     //
     // let fbnServerIdHex = '0x' + subNetId + define.NODE_ROLE.NUM.DBN.toString();

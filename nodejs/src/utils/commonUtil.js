@@ -139,6 +139,17 @@ module.exports.makeFin = (dir, seed) => {
 }
 
 //
+module.exports.getMemInfo = () => {
+    const mem = {
+        freemem: os.freemem(),
+        totalmem: os.totalmem()
+    };
+    mem.available = (mem.freemem * 100 / mem.totalmem).toFixed(2) + '%';
+
+    return mem;
+}
+
+//
 module.exports.checkIP = (ipAddr) => {
     if(define.REGEX.IP_ADDR_REGEX.test(ipAddr))
     {
@@ -220,8 +231,8 @@ module.exports.ip2int = (ip) => {
 }
 
 module.exports.ipToInt = (ip) => {
-    var parts = ip.split(".");
-    var res = 0;
+    let parts = ip.split(".");
+    let res = 0;
 
     res += parseInt(parts[0], 10) << 24;
     res += parseInt(parts[1], 10) << 16;
@@ -232,10 +243,10 @@ module.exports.ipToInt = (ip) => {
 }
 
 module.exports.intToIP = (ipInt) => {
-    var part1 = ipInt & 255;
-    var part2 = ((ipInt >> 8) & 255);
-    var part3 = ((ipInt >> 16) & 255);
-    var part4 = ((ipInt >> 24) & 255);
+    let part1 = ipInt & 255;
+    let part2 = ((ipInt >> 8) & 255);
+    let part3 = ((ipInt >> 16) & 255);
+    let part4 = ((ipInt >> 24) & 255);
 
     return part4 + "." + part3 + "." + part2 + "." + part1;
 }
@@ -502,11 +513,11 @@ module.exports.getDateMS = () => {
 // ExecSync
 // 
 module.exports.getCmdStr = (cmd) => {
-    return cmd.split(os.EOL)[0];
+    return cmd.toString().split(os.EOL)[0];
 }
 
 module.exports.getCmdStrArr = (cmd) => {
-    let arr = cmd.split(os.EOL);
+    let arr = cmd.toString().split(os.EOL);
     arr.pop();
 
     return arr;
@@ -645,4 +656,18 @@ module.exports.balNum = (balance, amount, decimal_point) => {
     }
 
     return true;
+}
+
+//
+module.exports.date2Timestamp = (strDate) => {
+    const dt = Date.parse(strDate);  
+
+    return dt;
+}
+
+//
+module.exports.timestamp2Date = (ts) => {
+    const td = new Date(ts);
+
+    return td;
 }

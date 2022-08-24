@@ -180,17 +180,17 @@ module.exports.resetReplSlaves = async () => {
 }
 
 //
-module.exports.setReplSlaveInfo = async (subNetId, ip, logFile, logPos) => {
+module.exports.setReplSlaveInfo = async (subNetId, ip, logFile, logPos, port) => {
     let user;
     let pwd;
-    let port;
+    // let port;
 
     const conn = await dbUtil.getConn();
 
     // REPL_USER
     user = config.CFG_PATH.MARIA.REPL_USERS[0] 
     pwd = config.CFG_PATH.MARIA.REPL_USERS_PW[0];
-    port = dbUtil.dbConfig.port;
+    // port = dbUtil.dbConfig.port;
 
     logger.debug("user : " + user + ", pwd : " + pwd + ", port : " + port);
 

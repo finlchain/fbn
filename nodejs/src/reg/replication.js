@@ -4,8 +4,31 @@ const define = require('./../../config/define.js');
 const cliHandler = require('./../cli/cliHandler.js');
 const dbUtil = require('./../db/dbUtil.js');
 const dbFB = require('./../db/dbFB.js');
+const dbRepl = require('./../db/dbRepl.js');
 const util = require('./../utils/commonUtil.js');
 const logger = require('./../utils/winlog.js');
+
+// Replication Set Mine
+module.exports.saveReplMyData = async(lastBlk, cluster_p2p_addr) => {
+    logger.debug("func : saveReplMyData");
+    //
+    // let subnet_id = util.hexStrToInt(cluster_p2p_addr.slice(define.P2P_DEFINE.P2P_ROOT_SPLIT_INDEX.START));
+    let subnet_id = cluster_p2p_addr.slice(define.P2P_DEFINE.P2P_ROOT_SPLIT_INDEX.START)
+
+    //
+    let serverId = util.ipToInt(util.getMyReplIP().toString());
+
+    let res = await dbRepl.setReplMaster(serverId);
+
+    await dbUtil.queryPre(dbFB.querys.fb.repl_info.insertReplInfo, [subnet_id, lastBlk, util.getMyReplIP(), define.NODE_ROLE.NUM.DBN, res.fileName, res.filePosition, cluster_p2p_addr+'ffff']);
+}
+
+//
+module.exports.clrReplMyData = async() => {
+    logger.debug("func : saveReplMyData");
+
+    await dbUtil.queryPre(dbFB.querys.fb.repl_info.deleteReplInfoByRole, [util.getMyReplIP()]);
+}
 
 // Replication Reset
 module.exports.resetReplData = async () => {

@@ -116,8 +116,10 @@ module.exports.IP_ASSIGN = {
     REPL : 0
 };
 
+module.exports.DB_TEST_MODE = false;
+
 // ISAG URL
-module.exports.ISAG_URL = '203.238.181.162'; // FINL
+module.exports.ISAG_URL = "api.finlscan.org"; // FINL
 if (os.hostname().includes('puri'))
 {
     // module.exports.ISAG_URL = '220.86.111.197' // PURI
@@ -126,12 +128,14 @@ if (os.hostname().includes('puri'))
 }
 else if (os.hostname().includes('finlt'))
 {
-    this.ISAG_URL = '203.238.181.164'; // FINLT
+    this.ISAG_URL = "apih.finlscan.org"; // FINLT
+}
+else if (os.hostname().includes('finld'))
+{
+    this.ISAG_URL = 'apid.finlscan.org'; // FINLD
 }
 
 module.exports.ISAG_WEBAPI_PORT = '3000'
-
-module.exports.DB_TEST_MODE = false;
 
 module.exports.ISAG_CONFIG = {
     family : 4,
@@ -142,4 +146,34 @@ module.exports.ISAG_CONFIG = {
         'Content-Type' : 'application/json'
     },
     timeout : 10000
+}
+
+// FBN URL
+module.exports.FBN_URL = "api.finlscan.org"; // FINL
+if (os.hostname().includes('puri'))
+{
+    // module.exports.FBN_URL = '220.86.111.197' // PURI
+    // module.exports.FBN_URL = "http://purichain.com"
+    this.FBN_URL = "www.purichain.com";
+}
+else if (os.hostname().includes('finlt'))
+{
+    this.FBN_URL = "apih.finlscan.org"; // FINLT
+}
+else if (os.hostname().includes('finld'))
+{
+    this.FBN_URL = '220.86.113.214'; // FINLD
+}
+
+module.exports.FBN_PORT = '3000';
+
+module.exports.FBN_CONFIG = {
+    family: 4,
+    host: this.FBN_URL,
+    port: this.FBN_PORT,
+    json: true,
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    timeout: 10000
 }

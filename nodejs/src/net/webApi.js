@@ -99,23 +99,24 @@ module.exports.APICall = async (httpConfig, data) => {
     let ret = await http_CB(httpConfig, data).then((resData) => {
         return resData;
     }).catch((error) => {
-        logger.error(JSON.stringify({errorCode : 3001, msg : error.message}));
+        logger.error(JSON.stringify({errorCode : 3002, msg : error.message}));
         return {errorCode : config.CONTRACT_ERROR_JSON.FB_SVR_ERROR.ERROR_CODE, msg : error.message};
     });
     return ret;
 }
 
 module.exports.APICallProc = async (apiPath, config, method, postData) => {
+// module.exports.APICallProc = async (apiPath, config, method, postData) => {
     let webApiConfig = util.copyObj(config);
 
     webApiConfig.path = apiPath;
     webApiConfig.method = method;
-
-    // method?? POST?? ???(postData?? ?????? ???), header?? Content-Type?? ????
-    if (postData) {
+    
+    // if postData exists, change 'Content-Type' of Header
+    if(!util.isJsonString(postData))
+    {
         webApiConfig.headers['Content-Type'] = 'application/x-www-form-urlencoded';
     }
-    logger.debug("port : " + webApiConfig.port);
 
     let apiRes = await this.APICall(webApiConfig, postData);
 

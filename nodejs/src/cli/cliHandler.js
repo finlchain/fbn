@@ -18,18 +18,21 @@ const logger = require('./../utils/winlog.js');
 const { initDatabaseIS } = require('../db/dbIS.js');
 
 //
+let DEFAULT_IDX = 0xFF;
+//
 let replDataArrInfo;
+let replDataArrIdx = DEFAULT_IDX;
 
 //
 module.exports.handler = async (cmd) => {
     let retVal = true;
 
-    logger.info('FBN CLI Received Data : ' + cmd);
+    logger.debug('FBN CLI Received Data : ' + cmd);
 
     let cmdSplit = cmd.split(' ');
 
     //
-    if(cmd.toString() === "dt") 
+    if(cmd.toString() === define.CMD.DB_DT) 
     {
         logger.info("DB Truncated");
 
@@ -43,69 +46,16 @@ module.exports.handler = async (cmd) => {
         //
         await dbFB.truncateFbDB();
     }
-    else if(cmd.slice(0,7) === "init db")
+    else if(cmd.slice(0,7) === define.CMD.DB_INIT)
     {
         //
         await dbMain.initDatabase();
     }
-    else if(cmd.slice(0,9) === "act query")
+    else if(cmd.slice(0,9) === define.CMD.DB_ACT_QUERY)
     {
         await dbUtil.actQuery(cmd.slice(10));
     }
-    else if(cmd.slice(0,12) === "maria passwd")
-    {
-        //
-    }
-    // else if()
-    // {
-    //     let element = replSetArr[0];
-
-    //     let clusterP2pAddr = element.cluster_p2p_addr;
-
-    //     let ip = element.ip;
-    //     let logFile = element.log_file;
-    //     let logPos = element.log_pos;
-
-    //     logger.info("clusterP2pAddr : " + clusterP2pAddr);
-    //     logger.info("ip : " + ip + ", logFile : " + logFile + ", logPos : " + logPos);
-
-    //     await dbRepl.setReplSlaveInfo(0, ip, logFile, logPos);
-    // }
-    else if(cmd.slice(0,15) === "webapi get test")
-    {
-        let apiRoutePath = '/kafka/broker/list';
-        let apiKey1 = 'subNetId';
-        let apiVal1 = 24580;
-
-        //
-        let apiPath = `${apiRoutePath}`;
-        logger.debug("apiPath : " + apiPath);
-
-        let postData = `${apiKey1}=${apiVal1}`;
-
-        //
-        let apiRes = await webApi.APICallProc(apiPath, config.FBN_CONFIG, webApi.WEBAPI_DEFINE.METHOD.POST, postData);
-
-        logger.debug("apiRes : " + JSON.stringify(apiRes));
-    }
-    else if(cmd.slice(0,16) === "webapi post test")
-    {
-        let apiRoutePath = '/kafka/broker/list';
-        let apiKey1 = 'subNetId';
-        let apiVal1 = 24580;
-
-        //
-        let apiPath = `${apiRoutePath}`;
-        logger.debug("apiPath : " + apiPath);
-
-        let postData = `${apiKey1}=${apiVal1}`;
-
-        //
-        let apiRes = await webApi.APICallProc(apiPath, config.FBN_CONFIG, webApi.WEBAPI_DEFINE.METHOD.POST, postData);
-
-        logger.debug("apiRes : " + JSON.stringify(apiRes));
-    }
-    else if(cmd.slice(0,8) === "fb rinfo")
+    else if(cmd.slice(0,8) === define.CMD.REPL_INFO)
     {
         let apiRoutePath = '/fb/repl/info';
         let apiRes = await webApi.APICallProc(apiRoutePath, config.FBN_CONFIG, webApi.WEBAPI_DEFINE.METHOD.GET);
@@ -128,7 +78,7 @@ module.exports.handler = async (cmd) => {
             logger.info("====================================================================");
         }
     }
-    else if(cmd.slice(0,7) === "fb rset")
+    else if(cmd.slice(0,7) === define.CMD.REPL_SET)
     {
         if (cmdSplit.length === 3)
         {
@@ -148,8 +98,14 @@ module.exports.handler = async (cmd) => {
                     {
                         if (idx < replDataArrInfo.length)
                         {
+                            //
+                            replDataArrIdx = idx;
                             let replData = replDataArrInfo[idx];
 
+                            //
+                            await repl.saveReplMyData(replData.blk_num, replData.cluster_p2p_addr);
+
+                            //
                             await dbFBHandler.saveReplInfo(replData);
                         }
                     }
@@ -194,7 +150,7 @@ module.exports.handler = async (cmd) => {
             // }
         }
     }
-    else if (cmd.slice(0,7) === "fb rget")
+    else if (cmd.slice(0,7) === define.CMD.REPL_GET)
     {
         logger.info("Replication No Action");
 
@@ -204,32 +160,77 @@ module.exports.handler = async (cmd) => {
             logger.debug("replDataArr : " + JSON.stringify(replDataArr));
         }
     }
-    else if (cmd.slice(0,8) === "fb rstop")
+    else if (cmd.slice(0,8) === define.CMD.REPL_STOP)
     {
         logger.info("Replication Slave Stop");
         await dbRepl.stopReplSlaves();
     }
-    else if (cmd.slice(0,7) === "fb rrst")
+    else if (cmd.slice(0,7) === define.CMD.REPL_RESET)
     {
         logger.info("Replication Slave Reset");
+
+        //
+        await repl.clrReplMyData();
+
+        //
         await dbRepl.resetReplSlaves();
     }
-    else if (cmd.slice(0,7) === "fb rstt")
+    else if (cmd.slice(0,7) === define.CMD.REPL_START)
     {
         logger.info("Replication Slave Start");
         await dbRepl.startReplSlaves();
     }
-    else if (cmd.slice(0, 9) === "replS get")
+    else if (cmd.slice(0, 9) === define.CMD.REPL_GET_SLAVE)
     {
         await dbRepl.getReplSlaves();
     }
-    else if  (cmd.slice(0,3) === "ips")
+    else if (cmd.slice(0, 8) === define.CMD.REPL_SAVE_MINE)
+    {
+        //
+    }
+    //
+    else if  (cmd.slice(0,3) === define.CMD.GET_MY_IPS)
     {
         let localIPs = util.getMyIPs();
         //
         await util.asyncForEach(localIPs, async(element, index) => {
             logger.debug("ip[" + index + "] : " + element);
         });
+    }
+    //
+    else if(cmd.slice(0,15) === "test webapi get")
+    {
+        let apiRoutePath = '/kafka/broker/list';
+        let apiKey1 = 'subNetId';
+        let apiVal1 = 24580;
+
+        //
+        let apiPath = `${apiRoutePath}`;
+        logger.debug("apiPath : " + apiPath);
+
+        let postData = `${apiKey1}=${apiVal1}`;
+
+        //
+        let apiRes = await webApi.APICallProc(apiPath, config.FBN_CONFIG, webApi.WEBAPI_DEFINE.METHOD.POST, postData);
+
+        logger.debug("apiRes : " + JSON.stringify(apiRes));
+    }
+    else if(cmd.slice(0,16) === "test webapi post")
+    {
+        let apiRoutePath = '/kafka/broker/list';
+        let apiKey1 = 'subNetId';
+        let apiVal1 = 24580;
+
+        //
+        let apiPath = `${apiRoutePath}`;
+        logger.debug("apiPath : " + apiPath);
+
+        let postData = `${apiKey1}=${apiVal1}`;
+
+        //
+        let apiRes = await webApi.APICallProc(apiPath, config.FBN_CONFIG, webApi.WEBAPI_DEFINE.METHOD.POST, postData);
+
+        logger.debug("apiRes : " + JSON.stringify(apiRes));
     }
     else
     {

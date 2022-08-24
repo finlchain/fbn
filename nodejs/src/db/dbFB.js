@@ -59,6 +59,7 @@ module.exports.querys = {
             insertReplInfo: "INSERT IGNORE INTO fb.repl_info(subnet_id, blk_num, ip, role, log_file, log_pos, cluster_p2p_addr) values(?, ?, ?, ?, ?, ?, ?)",
             //
             deleteReplInfo: "DELETE FROM fb.repl_info",
+            deleteReplInfoByRole: "DELETE FROM fb.repl_info WHERE ip = ?",
             //
             selectReplInfo: "SELECT * FROM fb.repl_info ORDER BY blk_num DESC",
             selectReplInfoByBN: "SELECT * FROM fb.repl_info WHERE blk_num = ? ORDER BY blk_num DESC",
